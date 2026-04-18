@@ -70,3 +70,104 @@
 
     If saving fails, show an error message
 */
+
+// adminDashboard.js
+// Admin dashboard logic: load, filter, and add doctors.
+
+import {openModal} from './components/modals.js';
+import {getDoctors, filterDoctors, saveDoctor} from './services/doctorServices.js';
+import {createDoctorCard} from './components/doctorCard.js';
+
+// ── "Add Doctor" button (injected by header.js after DOM is ready) ────────────
+document.addEventListener("DOMContentLoaded", () => {
+    loadDoctorCards();
+
+    // The addDocBtn is rendered inside the header by header.js; attach after load
+    const addDocBtn = document.getElementById("addDocBtn");
+    if (addDocBtn) {
+        addDocBtn.addEventListener("click", () => openModal("addDoctor"));
+    }
+
+    // Search + filter listeners
+    document.getElementById("searchBar")
+        .addEventListener("input", filterDoctorsOnChange);
+    document.getElementById("filterTime")
+        .addEventListener("change", filterDoctorsOnChange);
+    document.getElementById("filterSpecialty")
+        .addEventListener("change", filterDoctorsOnChange);
+});
+
+// ── Load all doctor cards ─────────────────────────────────────────────────────
+async function loadDoctorCards() {
+    try {
+        const doctors = await getDoctors();
+        const contentDiv = document.getElementById("content");
+        contentDiv.innerHTML = "";
+        doctors.forEach(doctor => contentDiv.appendChild(createDoctorCard(doctor)));
+    } catch (error) {
+        console.error("Error :: loadDoctorCards ::", error);
+    }
+}
+
+// ── Filter doctors on search/dropdown change ──────────────────────────────────
+async function filterDoctorsOnChange() {
+    const nameVal = document.getElementById("searchBar").value.trim();
+    const timeVal = document.getElementById("filterTime").value;
+    const specialtyVal = document.getElementById("filterSpecialty").value;
+
+    const name = nameVal || null;
+    const time = timeVal || null;
+    const specialty = specialtyVal || null;
+
+    try {
+        const response = await filterDoctors(name, time, specialty);
+        const doctors = response.doctors ?? [];
+
+        if (doctors.length > 0) {
+            renderDoctorCards(doctors);
+        } else {
+            document.getElementById("content").innerHTML =
+                "<p>No doctors found with the given filters.</p>";
+        }
+    } catch (error) {
+        console.error("Error :: filterDoctorsOnChange ::", error);
+        alert("❌ An error occurred while filtering doctors.");
+    }
+}
+
+// ── Utility: render a list of doctor cards ────────────────────────────────────
+function renderDoctorCards(doctors) {
+    const contentDiv = document.getElementById("content");
+    contentDiv.innerHTML = "";
+    doctors.forEach(doctor => contentDiv.appendChild(createDoctorCard(doctor)));
+}
+
+// ── Collect modal form data and save new doctor (called from modal button) ────
+window.adminAddDoctor = async function adminAddDoctor() {
+    const name = document.getElementById("doctorName").value.trim();
+    const specialty = document.getElementById("specialization").value;
+    const email = document.getElementById("doctorEmail").value.trim();
+    const password = document.getElementById("doctorPassword").value;
+    const phone = document.getElementById("doctorPhone").value.trim();
+
+    // Collect checked availability time slots
+    const checkedBoxes = document.querySelectorAll('input[name="availability"]:checked');
+    const availableTimes = Array.from(checkedBoxes).map(cb => cb.value);
+
+    const token = localStorage.getItem("token");
+    if (!token) {
+        alert("❌ You must be logged in as Admin to add a doctor.");
+        return;
+    }
+
+    const doctor = {name, specialty, email, password, phone, availableTimes};
+
+    const {success, message} = await saveDoctor(doctor, token);
+    if (success) {
+        alert(`✅ ${message}`);
+        document.getElementById("modal").style.display = "none";
+        await loadDoctorCards();
+    } else {
+        alert(`❌ ${message}`);
+    }
+};

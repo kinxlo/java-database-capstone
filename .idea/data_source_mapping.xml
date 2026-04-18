@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="DataSourcePerFileMappings">
+    <file url="file://$PROJECT_DIR$/app/src/main/resources/db/migration/v1_getDoctorWithMostpatientsByMonth.sql" value="c7de22b8-877a-496a-9732-783a560d7576" />
+    <file url="file://$PROJECT_DIR$/app/src/main/resources/db/migration/v1_getDoctorsWithmostPatientsByYear.sql" value="c7de22b8-877a-496a-9732-783a560d7576" />
+    <file url="file://$PROJECT_DIR$/app/src/main/resources/db/migration/v1_getdetailAppointmentbyDoctor.sql" value="c7de22b8-877a-496a-9732-783a560d7576" />
+  </component>
+</project>

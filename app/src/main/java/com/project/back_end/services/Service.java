@@ -1,5 +1,9 @@
 package com.project.back_end.services;
 
+import java.util.HashMap;
+import java.util.Map;
+
+@org.springframework.stereotype.Service
 public class Service {
 // 1. **@Service Annotation**
 // The @Service annotation marks this class as a service component in Spring. This allows Spring to automatically detect it through component scanning
@@ -62,5 +66,21 @@ public class Service {
 // - If no filters are provided, it retrieves all appointments for the patient.
 // This flexible method supports patient-specific querying and enhances user experience on the client side.
 
+    /**
+     * Minimal token validation contract used by MVC routes.
+     * Returns an empty map when token/role are acceptable; otherwise returns errors.
+     */
+    public Map<String, String> validateToken(String token, String role) {
+        Map<String, String> errors = new HashMap<>();
 
+        if (token == null || token.isBlank()) {
+            errors.put("token", "Invalid or missing token");
+        }
+
+        if (!"admin".equals(role) && !"doctor".equals(role) && !"patient".equals(role)) {
+            errors.put("role", "Unsupported role");
+        }
+
+        return errors;
+    }
 }

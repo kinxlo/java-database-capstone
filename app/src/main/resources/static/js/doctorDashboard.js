@@ -1,4 +1,7 @@
 /*
+  Doctor dashboard logic: load, filter, and display patient appointments.
+
+
   Import getAllAppointments to fetch appointments from the backend
   Import createPatientRow to generate a table row for each patient appointment
 
@@ -52,3 +55,77 @@
     - Call renderContent() (assumes it sets up the UI layout)
     - Call loadAppointments() to display today's appointments by default
 */
+
+// doctorDashboard.js
+// Doctor dashboard logic: load, filter, and display patient appointments.
+
+import {getAllAppointments} from './services/appointmentRecordService.js';
+import {createPatientRow} from './components/patientRows.js';
+
+// ── Global state ──────────────────────────────────────────────────────────────
+const tableBody = document.getElementById("patientTableBody");
+const token = localStorage.getItem("token");
+let selectedDate = new Date().toISOString().split("T")[0]; // "YYYY-MM-DD"
+let patientName = null;
+
+// ── Search bar ────────────────────────────────────────────────────────────────
+document.getElementById("searchBar").addEventListener("input", (e) => {
+    const val = e.target.value.trim();
+    patientName = val.length > 0 ? val : "null";
+    loadAppointments();
+});
+
+// ── "Today" button ────────────────────────────────────────────────────────────
+document.getElementById("todayButton").addEventListener("click", () => {
+    selectedDate = new Date().toISOString().split("T")[0];
+    document.getElementById("datePicker").value = selectedDate;
+    loadAppointments();
+});
+
+// ── Date picker ───────────────────────────────────────────────────────────────
+document.getElementById("datePicker").addEventListener("change", (e) => {
+    selectedDate = e.target.value;
+    loadAppointments();
+});
+
+// ── Load appointments ─────────────────────────────────────────────────────────
+async function loadAppointments() {
+    try {
+        const safeName = patientName ?? "null";
+        const data = await getAllAppointments(selectedDate, safeName, token);
+        const appointments = data.appointments ?? [];
+
+        tableBody.innerHTML = "";
+
+        if (appointments.length === 0) {
+            tableBody.innerHTML = `
+        <tr>
+          <td colspan="5" class="noPatientRecord">No Appointments found for today.</td>
+        </tr>`;
+            return;
+        }
+
+        appointments.forEach(appt => {
+            const patient = {
+                id: appt.patient.id,
+                name: appt.patient.name,
+                phone: appt.patient.phone,
+                email: appt.patient.email,
+            };
+            const row = createPatientRow(patient, appt.id, appt.doctor?.id);
+            tableBody.appendChild(row);
+        });
+
+    } catch (error) {
+        console.error("Error :: loadAppointments ::", error);
+        tableBody.innerHTML = `
+      <tr>
+        <td colspan="5" class="noPatientRecord">Error loading appointments. Try again later.</td>
+      </tr>`;
+    }
+}
+
+// ── Bootstrap ─────────────────────────────────────────────────────────────────
+document.addEventListener("DOMContentLoaded", () => {
+    loadAppointments();
+});

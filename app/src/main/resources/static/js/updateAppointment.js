@@ -1,6 +1,6 @@
 // updateAppointment.js
-import { updateAppointment } from "../js/services/appointmentRecordService.js";
-import { getDoctors } from "../js/services/doctorServices.js";
+import { updateAppointment } from "./services/appointmentRecordService.js";
+import { getDoctors } from "./services/doctorServices.js";
 document.addEventListener("DOMContentLoaded", initializePage);
 
 async function initializePage() {

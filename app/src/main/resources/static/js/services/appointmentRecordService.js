@@ -2,15 +2,26 @@
 import { API_BASE_URL } from "../config/config.js";
 const APPOINTMENT_API = `${API_BASE_URL}/appointments`;
 
-
-//This is for the doctor to get all the patient Appointments
+// Fetch all appointments for the doctor dashboard (filtered by date + patient name)
 export async function getAllAppointments(date, patientName, token) {
   const response = await fetch(`${APPOINTMENT_API}/${date}/${patientName}/${token}`);
   if (!response.ok) {
     throw new Error("Failed to fetch appointments");
   }
-
   return await response.json();
+}
+
+// Fetch the logged-in patient's appointment list (used by appointmentRecord.js)
+export async function getAppointmentRecord(token) {
+  try {
+    const response = await fetch(`${APPOINTMENT_API}/patient/${token}`);
+    if (!response.ok) throw new Error("Failed to fetch appointment record");
+    const data = await response.json();
+    return data.appointments ?? [];
+  } catch (error) {
+    console.error("Error :: getAppointmentRecord ::", error);
+    return [];
+  }
 }
 
 export async function bookAppointment(appointment, token) {

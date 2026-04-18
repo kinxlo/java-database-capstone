@@ -12,7 +12,7 @@ export function getAppointments(appointment) {
 
   // Attach event listeners
   tr.querySelector(".prescription-btn").addEventListener("click", () => {
-    window.location.href = `addPrescription.html?id=${patient.id}`;
+    window.location.href = `/pages/addPrescription.html?appointmentId=${appointment.id}&patientName=${encodeURIComponent(appointment.patientName)}`;
   });
 
   return tr;

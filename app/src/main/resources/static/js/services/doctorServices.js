@@ -51,3 +51,96 @@
 
    Catch any other errors, alert the user, and return a default empty result
 */
+
+// doctorServices.js
+// All API interactions related to doctor data.
+
+import {API_BASE_URL} from "../config/config.js";
+
+const DOCTOR_API = API_BASE_URL + '/doctor';
+
+/**
+ * Fetch all doctors from the backend.
+ * @returns {Promise<Array>} Array of doctor objects, or [] on failure.
+ */
+export async function getDoctors() {
+    try {
+        const response = await fetch(DOCTOR_API);
+        const data = await response.json();
+        return data.doctors ?? [];
+    } catch (error) {
+        console.error("Error :: getDoctors ::", error);
+        return [];
+    }
+}
+
+/**
+ * Delete a doctor by ID (admin only).
+ * @param {number|string} id    - Doctor's unique identifier.
+ * @param {string}        token - Admin authentication token.
+ * @returns {Promise<{success: boolean, message: string}>}
+ */
+export async function deleteDoctor(id, token) {
+    try {
+        const response = await fetch(`${DOCTOR_API}/${id}/${token}`, {
+            method: "DELETE",
+        });
+        const data = await response.json();
+        return {success: response.ok, message: data.message};
+    } catch (error) {
+        console.error("Error :: deleteDoctor ::", error);
+        return {success: false, message: "Failed to delete doctor."};
+    }
+}
+
+/**
+ * Save (create) a new doctor (admin only).
+ * @param {Object} doctor - Doctor details (name, email, password, specialty, availableTimes…).
+ * @param {string} token  - Admin authentication token.
+ * @returns {Promise<{success: boolean, message: string}>}
+ */
+export async function saveDoctor(doctor, token) {
+    try {
+        const response = await fetch(`${DOCTOR_API}/${token}`, {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify(doctor),
+        });
+        const data = await response.json();
+        return {success: response.ok, message: data.message};
+    } catch (error) {
+        console.error("Error :: saveDoctor ::", error);
+        return {success: false, message: "Failed to save doctor."};
+    }
+}
+
+/**
+ * Filter doctors by name, available time slot, and/or specialty.
+ * Pass null or empty string for any parameter you don't want to filter by.
+ * @param {string|null} name      - Doctor name fragment.
+ * @param {string|null} time      - Time slot (e.g. "AM" | "PM").
+ * @param {string|null} specialty - Medical specialty string.
+ * @returns {Promise<{doctors: Array}>} Filtered doctors or { doctors: [] } on failure.
+ */
+export async function filterDoctors(name, time, specialty) {
+    try {
+        const safeName = name || "null";
+        const safeTime = time || "null";
+        const safeSpecialty = specialty || "null";
+
+        const response = await fetch(
+            `${DOCTOR_API}/filter/${safeName}/${safeTime}/${safeSpecialty}`
+        );
+
+        if (!response.ok) {
+            console.error("Error :: filterDoctors :: HTTP", response.status);
+            return {doctors: []};
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.error("Error :: filterDoctors ::", error);
+        alert("❌ An error occurred while filtering doctors.");
+        return {doctors: []};
+    }
+}
