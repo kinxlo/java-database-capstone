@@ -16,7 +16,7 @@ public class DashboardController {
 
     @GetMapping("/adminDashboard/{token}")
     public String adminDashboard(@PathVariable String token) {
-        Map<String, String> errors = service.validateToken(token, "admin");
+        Map<String, String> errors = service.validateTokenMap(token, "admin");
         if (errors.isEmpty()) {
             return "admin/adminDashboard";
         }
@@ -25,7 +25,7 @@ public class DashboardController {
 
     @GetMapping("/doctorDashboard/{token}")
     public String doctorDashboard(@PathVariable String token) {
-        Map<String, String> errors = service.validateToken(token, "doctor");
+        Map<String, String> errors = service.validateTokenMap(token, "doctor");
         if (errors.isEmpty()) {
             return "doctor/doctorDashboard";
         }
